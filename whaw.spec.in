@@ -1,0 +1,38 @@
+Summary: window manager independent window tiler
+Name: @PACKAGE@
+Version: @VERSION@
+Release: @RPMRELEASE@
+License: COPYING
+Group:  User Interface/Desktops
+BuildRoot: %{_tmppath}/%{name}-root
+Source: http://repetae.net/dist/%{name}-%{version}.tar.gz
+URL: http://repetae.net/computer/%{name}
+Packager: John Meacham <john@repetae.net>
+Prefix: %{_prefix}
+
+%description
+whaw window manager independent window tiler
+
+%prep
+%setup
+
+%build
+%configure
+make
+
+%install
+%makeinstall
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+
+%files
+%defattr(-,root,root)
+%{_bindir}/whaw
+%{_mandir}/man1/whaw.1.gz
+
+#%doc README
+
+

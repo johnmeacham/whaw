@@ -1,0 +1,87 @@
+=head1 whaw - window manager independent window layout tool
+
+whaw is a program for X11 that can use advanced tiling algorithms and an
+intuitive user interface to quickly lay out windows without having to replace
+or modify the set up of your window manager of choice. whaw is meant to augment
+the capabilities of your current window manager, not supplant them.
+
+
+=head1 using whaw
+
+whaw responds to the mouse moving into one of its control corners in order to not waste screen space yet always be accessible. A window placement operation consists of three steps.
+
+=over
+
+=item choosing a layout algorithm
+
+=item choosing the windows to move/resize
+
+=item choosing where to place the windows
+
+=back
+
+We shall describe these steps in more detail now.
+
+=over
+
+=item choosing a layout algorithm
+
+Choosing the layout algorithm is combined with activating whaw. In order to
+activate whaw, move the cursor into one of its activation corners, the
+upper-left corner of the screen by default. You will see the cursor change to a
+cross to let you know whaw has been activated. The two layout algorithms are
+horizontal and vertical. to choose horizontal layout, move the mouse cursor
+away from the corner horizontally, to choose vertical layout, move the cursor
+away vertically. the cursor will change into a horizontal or vertical arrow to
+indicate your choice. you can always change the layout algorithm by going back
+into the corner. any whaw operation can be canceled at any point by pressing
+the middle mouse button.
+
+=item choosing the windows to move/resize
+
+Use the mouse to left click on each window you want to add to your layout
+group. as you click on each window, it should be moved off screen to let you
+select windows underneath it.
+
+=item choosing where to place the windows
+
+The windows may be placed via a number of operations, to have the windows tiled
+across the current screen, press the right mouse button. to have them placed in
+a specific area with a specific size, use the left mouse button to drag out a
+box. the windows will be placed inside this box.
+
+=back
+
+=head1 caveats
+
+Some window managers fight whaw, although most can be made to work. let me know
+if you are experiencing trouble with any particular window manager and what type of thing
+you are seeing. the most common issues involve focus or window stacking order
+not being set properly, there are many techniques to fix these sort of issues
+specified by X11, ICCCM and freedesktop, sometimes it takes some care in
+finding the combination that works properly for a given manager. Other window
+managers with their own tiling algorithms (such as ion and ratpoison) cannot
+work with whaw at all since their own algorithms take precedence.
+
+=head1 testing
+
+Whaw has been tested with the following systems: metacity (the default fedora
+and gnome window manager), twm (the X11 classic) and no window manager at all.
+for the hardcore. whaw should degrade gracefully by modifying its algorithms
+from using a EWMH complaint window manager, to a ICCCM compliant one, all the
+way to a nonexistent one.
+
+=head1 author
+
+Whaw was written by John Meacham who can be contacted at john@repetae.net
+
+=head1 getting it
+
+=item the homepage for whaw is http://repetae.net/john/computer/whaw
+
+=item you can download it at http://repetae.net/john/computer/whaw/drop
+
+=item the darcs repository is at http://repetae.net/john/repos/whaw
+
+=item the changelog is at http://repetae.net/john/computer/whaw/Changelog.txt
+
