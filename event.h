@@ -7,9 +7,9 @@
 struct event_state;
 
 struct the_event {
-        enum { button_press, drag_start, drag_update, drag_end } type;
-        int start_x,start_y;   // used for drags only
-        int x,y;
+        enum { button_press, drag_start, drag_update, drag_end, key_press } type;
+        int start_x, start_y;  // used for drags only
+        int x, y;
         int button;
         int clickcount;
         Time time;

@@ -5,6 +5,7 @@
 #include <X11/cursorfont.h>
 #include <X11/extensions/Xinerama.h>
 #include <assert.h>
+#include <ctype.h>
 #include <popt.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -23,30 +24,24 @@
 
 static Display *dpy;
 
-static Window w;
+static Window w = None;
 static XineramaScreenInfo *screens = NULL;
 static int number_screens;
 static Window saved_focus = None;
 
-static Cursor cursor_cross;
-static Cursor cursor_vertical;
-static Cursor cursor_horizontal;
-static Cursor cursor_resize;
-
 static GC gc;
-
-struct corner_window {
-        Window w;
-        int corner;
-        int x, y;
-} windows[4];
 
 struct winlist {
         Window w;
         XWindowAttributes wa;
         XSizeHints size;
         long size_flag;
+        unsigned button_state;
         struct winlist *next;
+};
+
+struct rectangle {
+        int x, y, w, h;
 };
 
 static enum manager { no_window_manager, ehwm_manager, iccm_manager } manager = iccm_manager;
@@ -57,12 +52,14 @@ static struct winlist *head = NULL;
 static char *opt_display = NULL;
 static int opt_sync;
 static int opt_detach;
+static int opt_current = 0;
 static int opt_htile = 0;
 static int opt_vtile = 0;
 static int opt_winsize = 2;
 static int opt_threshold = 45;
 static int opt_vert_frame = -1;
 static int opt_horiz_frame = -1;
+static int opt_dump_screen_info = 0;
 static int opt_bordersize = 1;
 static char *opt_corner = "nw";
 static char *opt_virtual = NULL;
@@ -93,15 +90,37 @@ static const struct poptOption options[] = {
         {"horizontal_frame", 0, POPT_ARG_INT, &opt_horiz_frame, 0, "horizontal space needed by window frames. will be autodetected with modern window managers.", NULL},
         {"corner", 0, POPT_ARG_STRING, &opt_corner, 0, "which corner to use for activation (NE,NW,SE,SW)", NULL},
         {"border_size", 0, POPT_ARG_INT, &opt_bordersize, 0, "How close we are willing to get to the edge of the work area.", NULL},
+        {"current", 0, POPT_ARG_NONE, &opt_current, 0, "Choose the currently focused window.", NULL},
+        {"dump", 0, POPT_ARG_NONE, &opt_dump_screen_info, 0, "Dump detected screen information.", NULL},
         POPT_AUTOHELP POPT_TABLEEND
 };
 
+static bool
+rectangle_quad(struct rectangle *r, KeySym k)
+{
+        switch (k) {
+        case XK_l:
+                r->x += r->w / 2;
+        case XK_h:
+                r->w /= 2;
+                break;
+        case XK_j:
+                r->y += r->h / 2;
+        case XK_k:
+                r->h /= 2;
+                break;
+        default:
+                return false;
+        }
+        return true;
+}
+
 static void
-fetch_screen_info(Display * dpy)
+fetch_screen_info(Display *dpy)
 {
         static XineramaScreenInfo the_screen;
         if (screens && (screens != &the_screen))
-                XFree(screens);
+                opt_virtual ? free(screens) : XFree(screens);
         screens = XineramaQueryScreens(dpy, &number_screens);
         if (!screens) {
                 screens = &the_screen;
@@ -120,19 +139,20 @@ fetch_screen_info(Display * dpy)
                 for (int i = 0; i < number_screens; i++) {
                         ns[2 * i] = screens[i];
                         ns[2 * i + 1] = screens[i];
-                        if (!strcmp(opt_virtual, "h")) {
+                        if (!strcmp(opt_virtual, "v")) {
                                 ns[2 * i].width /= 2;
                                 ns[2 * i + 1].width = ns[2 * i + 1].width / 2 + ns[2 * i + 1].width % 2;
                                 ns[2 * i + 1].x_org += ns[2 * i].width;
-                        } else if (!strcmp(opt_virtual, "v")) {
+                        } else if (!strcmp(opt_virtual, "h")) {
                                 ns[2 * i].height /= 2;
                                 ns[2 * i + 1].height = ns[2 * i + 1].height / 2 + ns[2 * i + 1].height % 2;
                                 ns[2 * i + 1].y_org += ns[2 * i].height;
                         }
                 }
+                if (screens != &the_screen)
+                        XFree(screens);
                 screens = ns;
                 number_screens *= 2;
-
         }
         for (int i = 0; i < number_screens; i++)
                 printf("Screen %i, (%i,%i), %ix%i\n", i, (int)screens[i].x_org, (int)screens[i].y_org, (int)screens[i].width, (int)screens[i].height);
@@ -150,12 +170,12 @@ which_screen(int x, int y)
 }
 
 static void
-set_focus(Display * dpy, Window w)
+set_focus(Display *dpy, Window w)
 {
         if (w == None)
                 return;
-        XEvent ev;
-        memset(&ev, 0, sizeof(ev));
+        XEvent ev = { };
+//        memset(&ev, 0, sizeof(ev));
         ev.type = ClientMessage;
         ev.xclient.window = w;
         ev.xclient.display = dpy;
@@ -167,20 +187,28 @@ set_focus(Display * dpy, Window w)
         XSendEvent(dpy, DefaultRootWindow(dpy), False, SubstructureNotifyMask | SubstructureRedirectMask, &ev);
 }
 
-static void
-unmaximize_window(Display * dpy, Window w)
+static Window
+get_focus(Display *dpy)
 {
-        XEvent ev;
-        memset(&ev, 0, sizeof(ev));
+        Window win = None;
+        get_props_window(dpy, None, XA__NET_ACTIVE_WINDOW, &win, 1);
+        return win;
+}
+
+static void
+unmaximize_window(Display *dpy, Window w)
+{
+        XEvent ev = { };
+//        memset(&ev, 0, sizeof(ev));
         ev.type = ClientMessage;
         ev.xclient.window = w;
         ev.xclient.display = dpy;
         ev.xclient.format = 32;
         ev.xclient.message_type = XA__NET_WM_STATE;
-        ev.xclient.data.l[0] = XA__NET_WM_STATE_REMOVE;
+        ev.xclient.data.l[0] = 0;
         ev.xclient.data.l[1] = XA__NET_WM_STATE_MAXIMIZED_HORZ;
         ev.xclient.data.l[2] = XA__NET_WM_STATE_MAXIMIZED_VERT;
-        ev.xclient.data.l[3] = XA__NET_WM_STATE_MAXIMIZED;
+//        ev.xclient.data.l[3] = XA__NET_WM_STATE_MAXIMIZED;
         XSendEvent(dpy, DefaultRootWindow(dpy), False, SubstructureNotifyMask | SubstructureRedirectMask, &ev);
 }
 
@@ -190,71 +218,60 @@ unmaximize_window(Display * dpy, Window w)
 #define IN(i,x,w) (i >= x && i < x + w)
 
 static void
-get_viewarea(int screen_num, int *x, int *y, int *w, int *h)
+get_viewarea(int screen_num, struct rectangle *r)
 {
         XineramaScreenInfo *s = screens + screen_num;
-        *x = s->x_org;
-        *y = s->y_org;
-        *w = s->width;
-        *h = s->height;
+        r->x = s->x_org;
+        r->y = s->y_org;
+        r->w = s->width;
+        r->h = s->height;
         int strut_top = 0, strut_bottom = 0, strut_left = 0, strut_right = 0;
-        long clients[MAX_CLIENTS];
-        memset(clients, 0, sizeof(clients));
-        int num = get_property(dpy, DefaultRootWindow(dpy), XA__NET_CLIENT_LIST,
-                               XA_WINDOW, clients, sizeof(long) * MAX_CLIENTS, 0, 0);
-        //printf("Num clients: %i\n", num/ sizeof(long));
-        for (int i = 0; i < num / sizeof(long); i++) {
-                //printf("client: 0x%lx\n", (unsigned long)clients[i]);
-                long net_strut[12];
-                memset(net_strut, 0, sizeof(net_strut));
-                int n = get_property(dpy, clients[i], XA__NET_WM_STRUT_PARTIAL,
-                                     XA_CARDINAL, net_strut, sizeof(long) * 12, 0,
-                                     0);
-                if (!n)
-                        n = get_property(dpy, clients[i], XA__NET_WM_STRUT, XA_CARDINAL, net_strut, sizeof(long) * 4, 0, 0);
-                if (!n)
-                        continue;
-                if (n / sizeof(long) == 4) {
+        Window clients[MAX_CLIENTS] = { };
+        int num = get_props_window(dpy, None, XA__NET_CLIENT_LIST, clients, MAX_CLIENTS);
+//        printf("Num clients: %i\n", num/ sizeof(long));
+        for (int i = 0; i < num; i++) {
+                //               printf("client: 0x%lx\n", (unsigned long)clients[i]);
+                long net_strut[12] = { 0 };
+                int n = get_props_cardinal(dpy, clients[i], XA__NET_WM_STRUT_PARTIAL, net_strut, 12);
+                if (n <= 0)
+                        n = get_props_cardinal(dpy, clients[i], XA__NET_WM_STRUT, net_strut, 12);
+                if (n == 4) {
                         //printf("short strut\n");
                         strut_left += net_strut[0];
                         strut_right += net_strut[1];
                         strut_top += net_strut[2];
                         strut_bottom += net_strut[3];
-
-                } else if (n / sizeof(long) == 12) {
+                } else if (n == 12) {
                         //printf("long strut\n");
-                        if (IN(net_strut[4], *y, *h)
-                            || IN(net_strut[5], *y, *h))
+                        if (IN(net_strut[4], r->y, r->h)
+                            || IN(net_strut[5], r->y, r->h))
                                 strut_left += net_strut[0];
-                        if (IN(net_strut[6], *y, *h)
-                            || IN(net_strut[7], *y, *h))
+                        if (IN(net_strut[6], r->y, r->h)
+                            || IN(net_strut[7], r->y, r->h))
                                 strut_right += net_strut[1];
-                        if (IN(net_strut[8], *x, *w)
-                            || IN(net_strut[9], *x, *w))
+                        if (IN(net_strut[8], r->x, r->w)
+                            || IN(net_strut[9], r->x, r->w))
                                 strut_top += net_strut[2];
-                        if (IN(net_strut[10], *x, *w)
-                            || IN(net_strut[11], *x, *w))
+                        if (IN(net_strut[10], r->x, r->w)
+                            || IN(net_strut[11], r->x, r->w))
                                 strut_bottom += net_strut[3];
                 }
         }
-        *x += strut_left;
-        *w -= (strut_left + strut_right);
-        *y += strut_top;
-        *h -= (strut_top + strut_bottom);
+        r->x += strut_left;
+        r->w -= (strut_left + strut_right);
+        r->y += strut_top;
+        r->h -= (strut_top + strut_bottom);
 }
 
-//struct corner_window *
 static void
-make_corner_window(Display * dpy, int corner)
+make_corner_window(Display *dpy, int corner)
 {
         unsigned long valuemask = CWEventMask | CWWinGravity | CWOverrideRedirect;
         XSetWindowAttributes att;
         att.event_mask = idle_mask;
         att.win_gravity = corner;
         att.override_redirect = True;
-
         unsigned x = 0, y = 0;
-
         switch (corner) {
         case NorthEastGravity:
                 opt_x = DisplayWidth(dpy, DefaultScreen(dpy)) - 1;
@@ -267,14 +284,10 @@ make_corner_window(Display * dpy, int corner)
                 opt_y = DisplayHeight(dpy, DefaultScreen(dpy)) - 1;
                 y = DisplayHeight(dpy, DefaultScreen(dpy)) - opt_winsize;
         case NorthWestGravity:
-        default:
-                ;
+        default:;
         }
-
         w = XCreateWindow(dpy, DefaultRootWindow(dpy), x, y, opt_winsize, opt_winsize, 0, 0, InputOnly, None, valuemask, &att);
-
         XMapRaised(dpy, w);
-
 }
 
 static void
@@ -298,23 +311,20 @@ count_winlist(void)
 {
         int i;
         struct winlist *wl = head;
-        for (i = 0; wl; wl = wl->next, i++) ;
+        for (i = 0; wl; wl = wl->next, i++)
+                if (wl->button_state & ShiftMask)
+                        i++;
         return i;
 }
 
 static void
-move_window(Display * dpy, Window w, int x, int y, int width, int height)
+move_window(Display *dpy, Window w, int x, int y, int width, int height)
 {
-
         unmaximize_window(dpy, w);
-
-        long extents[4];
-        memset(extents, 0, sizeof(extents));
-        int ret = get_property(dpy, w, XA__NET_FRAME_EXTENTS, XA_CARDINAL, extents,
-                               sizeof(long) * 4, sizeof(long) * 4, 0);
+        long extents[4] = { };
         int vert_frame = opt_vert_frame;
         int horiz_frame = opt_horiz_frame;
-        if (ret == -1) {
+        if (get_props_cardinal(dpy, w, XA__NET_FRAME_EXTENTS, extents, 4) < 4) {
                 if (vert_frame < 0)
                         vert_frame = 2;
                 if (horiz_frame < 0)
@@ -341,16 +351,13 @@ move_window(Display * dpy, Window w, int x, int y, int width, int height)
         ch.width = width;
         ch.height = height;
         ch.stack_mode = Above;
-
         XReconfigureWMWindow(dpy, w, DefaultScreen(dpy), CWX | CWY | CWWidth | CWHeight | CWStackMode, &ch);
         set_focus(dpy, w);
-
 }
 
 static void
-pack_windows(Display * dpy, struct winlist *head, enum style style, int x_org, int y_org, int width, int height)
+pack_windows(Display *dpy, struct winlist *head, enum style style, int x_org, int y_org, int width, int height)
 {
-
         if (width < 1)
                 width = 1;
         if (height < 1)
@@ -368,11 +375,14 @@ pack_windows(Display * dpy, struct winlist *head, enum style style, int x_org, i
                 struct winlist *wl = head;
                 int cv = sz;
                 for (; wl; wl = wl->next) {
-                        cv -= dsz;
+                        int mdsz = dsz;
+                        if (wl->button_state & ShiftMask)
+                                mdsz *= 2;
+                        cv -= mdsz;
                         if (style == horizontal)
-                                move_window(dpy, wl->w, x_org + cv, y_org + 0, dsz, height);
+                                move_window(dpy, wl->w, x_org + cv, y_org + 0, mdsz, height);
                         else
-                                move_window(dpy, wl->w, x_org + 0, y_org + cv, width, dsz);
+                                move_window(dpy, wl->w, x_org + 0, y_org + cv, width, mdsz);
                 }
         }
         struct winlist *wl = head;
@@ -384,20 +394,15 @@ pack_windows(Display * dpy, struct winlist *head, enum style style, int x_org, i
 }
 
 static void
-choose_window(Display * dpy, Window w)
+choose_window(Display *dpy, Window w, unsigned state)
 {
-        if (w == None) {
-                //printf("Skipping root window...\n");
+        if (w == None)
                 return;
-        }
         Window app_window = XmuClientWindow(dpy, w);
-        //printf("Window: 0x%x  ", (unsigned int)app_window);
         XWindowAttributes wa;
         XGetWindowAttributes(dpy, app_window, &wa);
-
-        long type = None;
-        get_property(dpy, app_window, XA__NET_WM_WINDOW_TYPE, XA_ATOM, &type, sizeof(long), 0, 0);
-
+        Atom type = None;
+        get_props_atom(dpy, app_window, XA__NET_WM_WINDOW_TYPE, &type, 1);
         if (wa.override_redirect || type == XA__NET_WM_WINDOW_TYPE_DOCK || type == XA__NET_WM_WINDOW_TYPE_DESKTOP) {
                 //printf("Skipping special window...\n");
                 return;
@@ -408,49 +413,12 @@ choose_window(Display * dpy, Window w)
         wl->next = head;
         head = wl;
         wl->wa = wa;
+        wl->button_state = state;
         XGetWMNormalHints(dpy, wl->w, &wl->size, &wl->size_flag);
-
-        if (manager == no_window_manager) {
+        if (manager == no_window_manager)
                 XLowerWindow(dpy, app_window);
-                /*
-                   XWithdrawWindow(dpy, app_window, DefaultScreen(dpy));
-                   XUnmapWindow(dpy, app_window);
-                   this is just in case, so the window doesn't get lost if a WM is in the process of starting
-                   XEvent ev;
-                   memset(&ev,0,sizeof(ev));
-                   ev.type = UnmapNotify;
-                   ev.xmap.display = dpy;
-                   ev.xmap.event = DefaultRootWindow(dpy);
-                   ev.xmap.window = app_window;
-                   ev.xmap.override_redirect = False;
-                   XSendEvent(dpy, DefaultRootWindow(dpy), False, SubstructureNotifyMask | SubstructureRedirectMask, &ev);
-                 */
-
-        } else {
-                XWindowChanges ch;
-                memset(&ch, 0, sizeof(ch));
-                ch.stack_mode = Below;
-                ch.x = 10000;
-                ch.y = 10000;
+        else
                 XIconifyWindow(dpy, app_window, DefaultScreen(dpy));
-                /*
-                   XReconfigureWMWindow(dpy, app_window, DefaultScreen(dpy),  CWX | CWY  , &ch);
-                   XLowerWindow(dpy, app_window);
-                   XIconifyWindow(dpy, app_window, DefaultScreen(dpy));
-
-                   XEvent ev;
-                   memset(&ev,0,sizeof(ev));
-                   ev.type = ClientMessage;
-                   ev.xclient.window = app_window;
-                   ev.xclient.display = dpy;
-                   ev.xclient.format = 32;
-                   ev.xclient.message_type = XA_WM_CHANGE_STATE;
-                   ev.xclient.data.l[0] = IconicState;
-
-                   XSendEvent(dpy, DefaultRootWindow(dpy), False, SubstructureNotifyMask | SubstructureRedirectMask, &ev);
-                 */
-
-        }
 }
 
 static void
@@ -466,7 +434,7 @@ fork_away(void)
         }
         if (pid != 0)
                 exit(0);
-        chdir("/");
+        if (chdir("/")) ;
         setsid();
         close(0);
         close(1);
@@ -485,12 +453,10 @@ main(int argc, const char **argv)
                 exit(1);
         }
         poptFreeContext(popt);
-
         if (opt_version) {
                 printf("%s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
                 exit(0);
         }
-
         dpy = XOpenDisplay(opt_display);
         if (!dpy) {
                 fprintf(stderr, "X11 says \"I can't open display '%s'\"\n", XDisplayName(opt_display));
@@ -506,11 +472,10 @@ main(int argc, const char **argv)
         gc = XCreateGC(dpy, DefaultRootWindow(dpy), GCLineWidth | GCForeground | GCFunction | GCSubwindowMode, &gcv);
         intern_xatoms(dpy);
         fetch_screen_info(dpy);
-        cursor_cross = XCreateFontCursor(dpy, XC_fleur);
-        cursor_horizontal = XCreateFontCursor(dpy, XC_sb_h_double_arrow);
-        cursor_vertical = XCreateFontCursor(dpy, XC_sb_v_double_arrow);
-        cursor_resize = XCreateFontCursor(dpy, XC_sizing);
-
+        Cursor cursor_cross = XCreateFontCursor(dpy, XC_fleur);
+        Cursor cursor_horizontal = XCreateFontCursor(dpy, XC_sb_h_double_arrow);
+        Cursor cursor_vertical = XCreateFontCursor(dpy, XC_sb_v_double_arrow);
+//        Cursor cursor_resize = XCreateFontCursor(dpy, XC_sizing);
         int corner = NorthEastGravity;
         if (!strcasecmp(opt_corner, "ne"))
                 corner = NorthEastGravity;
@@ -520,17 +485,12 @@ main(int argc, const char **argv)
                 corner = SouthWestGravity;
         else if (!strcasecmp(opt_corner, "se"))
                 corner = SouthEastGravity;
-
         if (!opt_htile && !opt_vtile)
                 make_corner_window(dpy, corner);
-
         if (opt_detach)
                 fork_away();
-
         struct event_state *event_state = create_event_state();
-
         bool in_drag = false;
-
         if (opt_htile || opt_vtile) {
                 if (opt_vtile) {
                         XGrabPointer(dpy, DefaultRootWindow(dpy), True, choosing_mask, GrabModeAsync, GrabModeAsync, None, cursor_vertical, CurrentTime);
@@ -539,25 +499,28 @@ main(int argc, const char **argv)
                         XGrabPointer(dpy, DefaultRootWindow(dpy), True, choosing_mask, GrabModeAsync, GrabModeAsync, None, cursor_horizontal, CurrentTime);
                         style = horizontal;
                 }
-                long win = None;
-                get_property(dpy, DefaultRootWindow(dpy), XA__NET_ACTIVE_WINDOW, XA_WINDOW, &win, sizeof(long), 0, 0);
-                saved_focus = win;
+                XGrabKeyboard(dpy, DefaultRootWindow(dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime);
+                saved_focus = get_focus(dpy);
                 destroy_winlist(true, true);
+                if (opt_current)
+                        choose_window(dpy, saved_focus, 0);
         }
-
         for (;;) {
                 XEvent ev;
                 XNextEvent(dpy, &ev);
-                //print_event(ev);
+                print_event(ev);
                 struct the_event *event;
+                struct rectangle r = { };
                 if (process_event(&ev, &event, event_state)) {
                         for (; event; event = event->next) {
                                 switch (event->type) {
+                                case key_press:
                                 case button_press:
                                         assert(!in_drag);
                                         if (event->button == 2 || ((event->button == 3)
-                                                                   && !head)) {
+                                                                   && !head) || event->button == XK_Escape) {
                                                 XUngrabPointer(dpy, event->time);
+                                                XUngrabKeyboard(dpy, event->time);
                                                 destroy_winlist(true, true);
                                                 set_focus(dpy, saved_focus);
                                                 if (opt_htile || opt_vtile)
@@ -566,17 +529,17 @@ main(int argc, const char **argv)
                                         }
                                         if (event->button == 3) {
                                                 destroy_winlist(true, false);
-                                                int x, y, w, h;
-                                                get_viewarea(which_screen(event->x, event->y), &x, &y, &w, &h);
-                                                pack_windows(dpy, head, style, x + opt_bordersize, y + opt_bordersize, w - 2 * opt_bordersize, h - 2 * opt_bordersize);
+                                                get_viewarea(which_screen(event->x, event->y), &r);
+                                                pack_windows(dpy, head, style, r.x + opt_bordersize, r.y + opt_bordersize, r.w - 2 * opt_bordersize, r.h - 2 * opt_bordersize);
                                                 destroy_winlist(false, true);
                                                 XUngrabPointer(dpy, event->time);
+                                                XUngrabKeyboard(dpy, event->time);
                                                 if (opt_htile || opt_vtile)
                                                         exit(0);
                                                 break;
                                         }
-
-                                        choose_window(dpy, ev.xbutton.subwindow);
+                                        if (event->type == button_press)
+                                                choose_window(dpy, ev.xbutton.subwindow, ev.xbutton.state);
                                         break;
                                 case drag_start:
                                         assert(!in_drag);
@@ -602,30 +565,24 @@ main(int argc, const char **argv)
                                         pack_windows(dpy, head, style, sx, sy, sw, sh);
                                         destroy_winlist(false, true);
                                         XUngrabPointer(dpy, event->time);
+                                        XUngrabKeyboard(dpy, event->time);
                                         if (opt_htile || opt_vtile)
                                                 exit(0);
                                         break;
-
                                 }
                         }
                 } else
                         switch (ev.type) {
-                        case ConfigureNotify:
-                                if (!opt_htile && !opt_vtile)
-                                        XRaiseWindow(dpy, w);
-                                break;
                         case EnterNotify:
                                 if (opt_htile || opt_vtile || ev.xcrossing.window != w || in_drag)
                                         break;
                                 XGrabPointer(dpy, DefaultRootWindow(dpy), True, activated_mask, GrabModeAsync, GrabModeAsync, None, cursor_cross, ev.xcrossing.time);
-                                long win = None;
-                                get_property(dpy, DefaultRootWindow(dpy), XA__NET_ACTIVE_WINDOW, XA_WINDOW, &win, sizeof(long), 0, 0);
+                                XGrabKeyboard(dpy, DefaultRootWindow(dpy), True, GrabModeAsync, GrabModeAsync, ev.xcrossing.time);
+                                memset(&r, 0, sizeof(r));
+                                Window win = None;
+                                get_props_window(dpy, None, XA__NET_ACTIVE_WINDOW, &win, 1);
                                 saved_focus = win;
                                 destroy_winlist(true, true);
-                                break;
-                        case MapNotify:
-                                if (!opt_htile && !opt_vtile)
-                                        XRaiseWindow(dpy, w);
                                 break;
                         case MotionNotify:
                                 assert(!in_drag);
@@ -639,13 +596,15 @@ main(int argc, const char **argv)
                                         break;
                                 }
                                 break;
+                        case MapNotify:
+                        case ConfigureNotify:
+                        default:;
                                 //default:
                                 //fprintf(stderr, "Unknown Event.\n");
                         }
-                if (!opt_htile && !opt_vtile)
+                if (w != None)
                         XRaiseWindow(dpy, w);
         }
-
         XCloseDisplay(dpy);
         return 0;
 }
