@@ -74,12 +74,12 @@ one, all the way to a nonexistent one.
 # author
 
 Whaw was written by John Meacham who can be contacted at
-http://notanumber.net
+[http://notanumber.net](http://notanumber.net)
 
 # getting it
 
-- a github mirror of releases is at http://github.com/johnmeacham/whaw 
-- the homepage for whaw is http://repetae.net/john/computer/whaw
-- you can download it at http://repetae.net/john/computer/whaw/drop
-- the darcs repository is at http://repetae.net/john/repos/whaw
-- the changelog is at http://repetae.net/john/computer/whaw/Changelog.txt
+- a github mirror of releases is at [http://github.com/johnmeacham/whaw](http://github.com/johnmeacham/whaw)
+- the homepage for whaw is [http://repetae.net/john/computer/whaw](http://repetae.net/john/computer/whaw)
+- you can download it at [http://repetae.net/john/computer/whaw/drop](http://repetae.net/john/computer/whaw/drop)
+- the darcs repository is at [http://repetae.net/john/repos/whaw](http://repetae.net/john/repos/whaw)
+- the changelog is at [http://repetae.net/john/computer/whaw/Changelog.txt](http://repetae.net/john/computer/whaw/Changelog.txt)

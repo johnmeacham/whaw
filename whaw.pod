@@ -78,21 +78,21 @@ one, all the way to a nonexistent one.
 =head1 author
 
 Whaw was written by John Meacham who can be contacted at
-http://notanumber.net
+L<http://notanumber.net>
 
 =head1 getting it
 
 =over
 
-=item a github mirror of releases is at http://github.com/johnmeacham/whaw 
+=item a github mirror of releases is at L<http://github.com/johnmeacham/whaw>
 
-=item the homepage for whaw is http://repetae.net/john/computer/whaw
+=item the homepage for whaw is L<http://repetae.net/john/computer/whaw>
 
-=item you can download it at http://repetae.net/john/computer/whaw/drop
+=item you can download it at L<http://repetae.net/john/computer/whaw/drop>
 
-=item the darcs repository is at http://repetae.net/john/repos/whaw
+=item the darcs repository is at L<http://repetae.net/john/repos/whaw>
 
-=item the changelog is at http://repetae.net/john/computer/whaw/Changelog.txt
+=item the changelog is at L<http://repetae.net/john/computer/whaw/Changelog.txt>
 
 =back
 

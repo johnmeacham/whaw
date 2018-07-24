@@ -1,0 +1,189 @@
+patch 0b4c2a93e6974419e45f91ce58b66095f1ab97fb
+Author: John Meacham <john@repetae.net>
+Date:   Tue Jul 24 04:44:58 PDT 2018
+  * improve docs, update version
+
+patch b140dcb0073609121766b84e3b47c6a5e447f71f
+Author: John Meacham <john@repetae.net>
+Date:   Sat Jul 21 18:26:31 PDT 2018
+  * formatting
+
+patch 437322010ab5a920562e392aa0bc4b9e4b8c478a
+Author: John Meacham <john@repetae.net>
+Date:   Sat Jul 21 18:20:16 PDT 2018
+  * handle maximized windows properly, allow shift key to create wide windows
+
+patch 10a4203782b929f0612289c27cc9cf4e62aee60b
+Author: John Meacham <john@repetae.net>
+Date:   Thu Apr 24 16:18:14 PDT 2014
+  * add key presses
+
+patch 065416ab23a11c7458cf3823a9d226fc958a8bd1
+Author: John Meacham <john@repetae.net>
+Date:   Thu Apr 24 04:44:06 PDT 2014
+  * make new property routines
+
+patch 40359b75b0a08356ac2da2f0e94ef41140176991
+Author: John Meacham <john@repetae.net>
+Date:   Wed Apr 23 15:59:35 PDT 2014
+  * update docs
+
+patch 26cd61d3a0c71e4cb27027a3423b8b0ce186b86d
+Author: John Meacham <john@repetae.net>
+Date:   Wed Apr 23 15:59:14 PDT 2014
+  tagged 0.2
+
+patch 0c65bf0810d5edffe9f5648f759641d322b1c604
+Author: John Meacham <john@repetae.net>
+Date:   Wed Apr 23 15:45:41 PDT 2014
+  * update version to 0.2
+
+patch 3ed8453bacfed3b1413fbb711b8a8f8a09699d4c
+Author: John Meacham <john@repetae.net>
+Date:   Wed Apr 23 15:44:50 PDT 2014
+  * add opt_virtual option
+
+patch c4e6ad2fad7382c2b8c87e1e8a17463de45bf424
+Author: John Meacham <john@repetae.net>
+Date:   Wed Apr 23 15:18:30 PDT 2014
+  * add ability to force a tile based on a command line option
+
+patch 6c39df3fa8a7f85896e805dfae1eccaef3f1de84
+Author: John Meacham <john@repetae.net>
+Date:   Tue Jun 24 23:35:57 PDT 2008
+  * fix up 'make publish' to properly publish rpms
+
+patch a7be047c607e4c32d1046e449d5730a2f1bc213e
+Author: John Meacham <john@repetae.net>
+Date:   Tue Jun 24 23:33:23 PDT 2008
+  * add --version flag, so make distcheck works
+
+patch c69e68898ea062b6a14179dbf3327d34f99cacdf
+Author: John Meacham <john@repetae.net>
+Date:   Tue Jun 24 23:27:48 PDT 2008
+  * add rpm building
+
+patch b9409807f9460d2096c259e8faf08b6c2e86bee4
+Author: John Meacham <john@repetae.net>
+Date:   Tue Jun 24 23:06:07 PDT 2008
+  * remove unneeded 'reconf' script
+
+patch fc99e7036256068a767a09686b5739ffdfad7895
+Author: John Meacham <john@repetae.net>
+Date:   Fri Jun 13 17:53:23 PDT 2008
+  tagged 0.1.3
+
+patch 8413d297aa024b9dfae2e6e6f6ce51c6223da3b1
+Author: John Meacham <john@repetae.net>
+Date:   Fri Jun 13 17:53:15 PDT 2008
+  * bump version to 0.1.3
+
+patch b9a4850f3c1ab31dad4d158e42f1675ac9a91e5d
+Author: John Meacham <john@repetae.net>
+Date:   Fri Jun 13 17:43:58 PDT 2008
+  * add --corner option to decide which corner to use for whaw activation
+
+patch 1c21a3d979ba9db491508ef5a606bffb95c4ccde
+Author: John Meacham <john@repetae.net>
+Date:   Sat Dec 29 22:07:39 PST 2007
+  * make compatable with autoreconf
+
+patch 1398d657c4f18f97bd57f801e949bf05626e175a
+Author: John Meacham <john@repetae.net>
+Date:   Wed Aug 24 16:46:32 PDT 2005
+  * fix for RHEL 3.0 
+
+patch 51d8bdc5a875b67aba04d52ca9e99b282e3c9370
+Author: John Meacham <john@repetae.net>
+Date:   Wed Aug 10 02:29:42 PDT 2005
+  * add changelog
+
+patch e1f3a8787017ef5a45c3db34e4fa46fef895aec0
+Author: John Meacham <john@repetae.net>
+Date:   Wed Aug 10 02:19:52 PDT 2005
+  tagged 0.1.2
+
+patch 4793fe8c1e1e813aa83e42edee69ca5d86bd8cc8
+Author: John Meacham <john@repetae.net>
+Date:   Wed Aug 10 02:19:44 PDT 2005
+  * update version
+
+patch 0537a3310aeae3cb157ed07dbb16e1ce630ba20a
+Author: John Meacham <john@repetae.net>
+Date:   Wed Aug 10 02:16:55 PDT 2005
+  * implement focus restoration on quit and focus preservation on window movement commands
+
+patch 94f0309df63519bfc12316770635f242917eb524
+Author: John Meacham <john@repetae.net>
+Date:   Tue Aug  9 23:43:57 PDT 2005
+  * change active window after operation
+
+patch cb1dfdb3eae8bda6d2163bf1423a5c02d8d9268e
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 21:11:37 PDT 2005
+  * remove debugging output
+
+patch d6b3a51dc036550cd9e0f07e0a395126c115e217
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 21:06:13 PDT 2005
+  tagged 0.1.1
+
+patch 4dcd6af139e37c0f298abf950c5e5cb180e1cf4b
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 21:05:59 PDT 2005
+  * make 64 bit safe
+
+patch 8bf118b7a07ef6bf5f9ba09bba458d2a3b46dff0
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 19:29:09 PDT 2005
+  tagged 0.1.0
+
+patch 998a6dec72e3b546484560e25588fbe5f53d64ef
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 19:28:54 PDT 2005
+  * fix documentation
+
+patch 923178698a667debbd27a9f7b6ec67467d6ec4bd
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 19:18:22 PDT 2005
+  * unmaximize windows before moving them, remove unimplemented details from docs
+
+patch 43eda817ff2f63d245414c73581ecae1cffac812
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 19:08:02 PDT 2005
+  * ensure windows don't overlap panels at side of screen
+
+patch d03b8bafc02c54d16f236d159dc80fc13f054b21
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 18:21:59 PDT 2005
+  * get rid of debugging info and spurious messages
+
+patch 5f5574147ba71c23c18b28c2b439a248b3cf9467
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 16:50:49 PDT 2005
+  * allow user to set frame extents and border size
+
+patch c683ed2f13258ec299ed120afe4215078874684e
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 16:16:52 PDT 2005
+  * switch to hiding vs iconification, take into account frame extents
+
+patch cedd980d499ac54b466e1b119074ffdae6513a7b
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 15:10:30 PDT 2005
+  * make events more robust, skip spurious enternotifys, more debugging code
+
+patch 37dc2b17ec29b851c1457446abbe063774f24901
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 13:03:42 PDT 2005
+  * added documentation
+
+patch 501c1dd7c1f21dec34af8f7ddc5d607b4cc7b7ff
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 12:30:41 PDT 2005
+  * use event state machine model
+
+patch 4ccf7246b7a86777d431dcd439ec16503eb39d79
+Author: John Meacham <john@repetae.net>
+Date:   Mon Aug  8 00:43:12 PDT 2005
+  * initial import

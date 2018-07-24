@@ -1,38 +1,8 @@
-pristine:82688bafcb75642f018cc4df71ce75258b154ee01f6bae91bc473fcda0e7b1fb
+pristine:fe49fc9eab07d39999cf1ca5475cd5eb45594dd775b38608262db06ef52d8a7e
 Starting with inventory:
-0000001563-7d7ad482dce71757c0411e2f4cfb4b1b93a97c1becd4845d975297616d9ce874
-[TAG 0.2
-John Meacham <john@repetae.net>**20140423225914
- Ignore-this: 4d01d76bcefe18b9239cb98d776d2214
+0000001736-f7074bc11920f42e97f889478520fc41a6bce1449d1573e14e5f695706303ca8
+[TAG v0.3
+John Meacham <john@repetae.net>**20180724115507
+ Ignore-this: d757f432affc439c30893f03a3d3c53
 ] 
-hash: 0000000920-97dbd8aad55156b164397f924fd13dc6b5954b99c2734f1dbd3c93fb441d8042
-[update docs
-John Meacham <john@repetae.net>**20140423225935
- Ignore-this: 89ae308bd6823ea000bf9fc7313dbf0d
-] 
-hash: 0000001665-062cc475a32acd20c2d358ca8392d939622b24bfdfa65e9380ac2f10dea34714
-[make new property routines
-John Meacham <john@repetae.net>**20140424114406
- Ignore-this: d566c066139fd06079274b4f2d30fc1e
-] 
-hash: 0000012496-1f2f3bfc7b0e1e78cad1abf557be4cb1488142a90e7e16c3f144d28f1a6045af
-[add key presses
-John Meacham <john@repetae.net>**20140424231814
- Ignore-this: d0dded858b7954a3c7ad57b83958812
-] 
-hash: 0000009866-8a7e02fc1c794bfdbc0fc68227b90044f4cbba7f80ed0d5d3869cdaf461ca525
-[handle maximized windows properly, allow shift key to create wide windows
-John Meacham <john@repetae.net>**20180722012016
- Ignore-this: b0113d73ea48c0df40072a73c3796e31
-] 
-hash: 0000002248-0703213783e71b0ca31bfdee6b72ea20e57f36d74285eefa5b7debce513f8c82
-[formatting
-John Meacham <john@repetae.net>**20180722012631
- Ignore-this: af0c7fa619ae23304df90141840bfd12
-] 
-hash: 0000053745-1929ac60f300fe01b8fb847d5de76e82d4537a13a3c39b83f778583b8a162343
-[improve docs, update version
-John Meacham <john@repetae.net>**20180724114458
- Ignore-this: 8c659ce46f4de6b619f6d9017579e160
-] 
-hash: 0000003523-8f55c2d22e670fa787371f57e1142d5fe2f4b1a302dfa318cbc04fa57fc0f08c
+hash: 0000001093-a77b6c06be83b5bad472fe67900bad23e3372ca4eccf8e6f8bd357a964b01f8b
