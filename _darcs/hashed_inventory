@@ -1,4 +1,4 @@
-pristine:4f8ae70801c212f90938eaccc83af99e370da156304767ab1b02478d90e2405a
+pristine:82688bafcb75642f018cc4df71ce75258b154ee01f6bae91bc473fcda0e7b1fb
 Starting with inventory:
 0000001563-7d7ad482dce71757c0411e2f4cfb4b1b93a97c1becd4845d975297616d9ce874
 [TAG 0.2
@@ -31,3 +31,8 @@ John Meacham <john@repetae.net>**20180722012631
  Ignore-this: af0c7fa619ae23304df90141840bfd12
 ] 
 hash: 0000053745-1929ac60f300fe01b8fb847d5de76e82d4537a13a3c39b83f778583b8a162343
+[improve docs, update version
+John Meacham <john@repetae.net>**20180724114458
+ Ignore-this: 8c659ce46f4de6b619f6d9017579e160
+] 
+hash: 0000003523-8f55c2d22e670fa787371f57e1142d5fe2f4b1a302dfa318cbc04fa57fc0f08c

@@ -1,4 +1,4 @@
-AC_INIT([whaw],[0.2],[john@repetae.net])
+AC_INIT([whaw],[0.3],[john@repetae.net])
 RPMRELEASE=1
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_SRCDIR(whaw.c)

@@ -8,7 +8,7 @@ whaw_SOURCES = whaw.c  property.c property.h util.h xatoms.c xatoms.h event.c ev
 whaw_CFLAGS= -std=c99 @X_CFLAGS@
 whaw_LDADD= @X_LIBS@  -lX11 -lXmu -lXinerama @X_EXTRA_LIBS@
 
-EXTRA_DIST = genatoms.prl  xatoms.atoms whaw.pod whaw.1 README whaw.spec
+EXTRA_DIST = genatoms.prl  xatoms.atoms whaw.pod whaw.1 README.mkd whaw.spec
 
 CLEANFILES=
 MAINTAINERCLEANFILES= xatoms.c xatoms.h
@@ -28,25 +28,25 @@ xatoms.h: xatoms.atoms genatoms.prl
 @PACKAGE@.html: @PACKAGE@.pod
 	pod2html  --noindex --norecurse @srcdir@/@PACKAGE@.pod > @PACKAGE@.html
 
-README: @PACKAGE@.pod
-	pod2text @srcdir@/@PACKAGE@.pod > README
+README.mkd: @PACKAGE@.pod
+	pod2markdown @srcdir@/@PACKAGE@.pod > $@
 
 WEBROOT= ${HOME}/public_html
 PUBLISH_DIR = ${WEBROOT}/computer/@PACKAGE@
 RPMROOT= ${HOME}/var/rpm
 
-publish: README whaw.1 whaw.html distcheck
+publish: README.mkd whaw.1 whaw.html distcheck
 	mkdir -p $(PUBLISH_DIR)
-	mkdir -p $(PUBLISH_DIR)/drop
-	cp @PACKAGE@-@VERSION@.tar.gz  $(PUBLISH_DIR)/drop
+#      mkdir -p $(PUBLISH_DIR)/drop
+#	cp @PACKAGE@-@VERSION@.tar.gz  $(PUBLISH_DIR)/drop
 	cp @PACKAGE@-@VERSION@.tar.gz  $(WEBROOT)/dist
 	cp @PACKAGE@.html $(PUBLISH_DIR)
 	darcs changes > Changelog.txt
 	cp Changelog.txt $(PUBLISH_DIR)
 	make -C $(PUBLISH_DIR) || true
-	rpmbuild -ta @PACKAGE@-@VERSION@.tar.gz
-	cp ${RPMROOT}/SRPMS/@PACKAGE@-@VERSION@-*.rpm ${WEBROOT}/yum
-	cp ${RPMROOT}/RPMS/*/@PACKAGE@-@VERSION@-*.rpm ${WEBROOT}/yum
+#	rpmbuild -ta @PACKAGE@-@VERSION@.tar.gz
+#	cp ${RPMROOT}/SRPMS/@PACKAGE@-@VERSION@-*.rpm ${WEBROOT}/yum
+#	cp ${RPMROOT}/RPMS/*/@PACKAGE@-@VERSION@-*.rpm ${WEBROOT}/yum
 
 
 

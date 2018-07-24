@@ -3,17 +3,14 @@
 whaw is a program for X11 that can use advanced tiling algorithms and an
 intuitive user interface to quickly lay out windows without having to replace
 or modify the set up of your window manager of choice. whaw is meant to augment
-the capabilities of your current window manager, not supplant them.
+the capabilities of your current window manager with basic tiling
+operations.
 
 # using whaw
 
 whaw responds to the mouse moving into one of its control corners in order to
 not waste screen space yet always be accessible. A window placement operation
 consists of three steps.
-
-- choosing a layout algorithm
-- choosing the windows to move/resize
-- choosing where to place the windows
 
 - choosing a layout algorithm
 
@@ -29,21 +26,23 @@ consists of three steps.
     the middle mouse button. The corner that activates whaw can be controlled with
     the --corner option.
 
-    You can also pass the --htile or --vtile options on the command line to force
+    In one-shot mode you can also pass the --htile or --vtile options on the command line to force
     whaw to perform a single layout in the given direction and then exit.
 
 - choosing the windows to move/resize
 
     Use the mouse to left click on each window you want to add to your layout
     group. as you click on each window, it should be moved off screen to let you
-    select windows underneath it.
+    select windows underneath it. If you hold down shift while clicking on a
+    window, it will grow to take up two slots instead of one if you don't want
+    to evenly space things.
 
 - choosing where to place the windows
 
-    The windows may be placed via a number of operations, to have the windows tiled
-    across the current screen, press the right mouse button. to have them placed in
-    a specific area with a specific size, use the left mouse button to drag out a
-    box. the windows will be placed inside this box.
+    To have the windows tiled across a given screen, press the right mouse
+    button on that screen. to have them placed in a specific area with a
+    specific size, use the left mouse button to drag out a box. the windows will
+    be placed inside this box.
 
 - virtual screens
 
@@ -66,18 +65,20 @@ work with whaw at all since their own algorithms take precedence.
 
 # testing
 
-Whaw has been tested with the following systems: metacity (the default fedora
-and gnome window manager), twm (the X11 classic) and no window manager at all.
-whaw should degrade gracefully by modifying its algorithms from using a EWMH
-complaint window manager, to a ICCCM compliant one, all the way to a
-nonexistent one.
+Whaw has been tested with the following systems: metacity (the default
+fedora and gnome window manager), twm (the X11 classic), fluxbox and no
+window manager at all.  whaw should degrade gracefully by modifying its
+algorithms from using a EWMH complaint window manager, to a ICCCM compliant
+one, all the way to a nonexistent one.
 
 # author
 
-Whaw was written by John Meacham who can be contacted at john@repetae.net
+Whaw was written by John Meacham who can be contacted at
+http://notanumber.net
 
 # getting it
 
+- a github mirror of releases is at http://github.com/johnmeacham/whaw 
 - the homepage for whaw is http://repetae.net/john/computer/whaw
 - you can download it at http://repetae.net/john/computer/whaw/drop
 - the darcs repository is at http://repetae.net/john/repos/whaw
